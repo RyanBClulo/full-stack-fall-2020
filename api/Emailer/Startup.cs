@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Emailer.MongoDb;
+using Emailer.Repos;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -41,6 +42,8 @@ namespace Emailer
                 return mongoClient.GetDatabase("emailer");
 
             });
+
+            services.AddScoped(typeof(ICustomerRepository), typeof(MongoCustomerRepository));
 
         }
 
