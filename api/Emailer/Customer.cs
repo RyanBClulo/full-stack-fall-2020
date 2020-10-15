@@ -1,10 +1,12 @@
-using System;
-using System.Data.Common;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Emailer
 {
+    /*
+     * TODO Customer should extend from a base model
+     * TODO fix Id to use ObjectId correctly
+     */
     public class Customer
     {
         [BsonId]

@@ -5,6 +5,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Emailer.Controllers
 {
+    /*
+     * TODO Use Async Task responses
+     * TODO Add a GetAll
+     */
     [ApiController]
     [Route("[controller]")]
     public class CustomerController : ControllerBase

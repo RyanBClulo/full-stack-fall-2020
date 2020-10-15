@@ -1,5 +1,3 @@
-using Emailer.MongoDb;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Emailer.Repos
