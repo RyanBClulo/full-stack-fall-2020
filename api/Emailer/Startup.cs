@@ -1,18 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Emailer.MongoDb;
+using Emailer.SMTP;
+using Emailer.Templates;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using MongoDB.Driver;
 
 namespace Emailer
 {
@@ -28,19 +22,29 @@ namespace Emailer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
-
-            services.Configure<MongoSettings>(Configuration.GetSection("MongoDb"));
-
-            var mongoSettings = new MongoSettings
-            {
-                ConnectionString = Configuration.GetValue<string>("MongoDb:ConnectionString")
-            };
-            var mongoClient = new MongoClient(mongoSettings.ConnectionString);
-
-            services.AddScoped<IMongoDatabase>(svc => mongoClient.GetDatabase("emailer"));
-            
-            services.AddScoped(typeof(IRepository<>), typeof(MongoRepository<>));
+            services
+                .AddRouting(options => { options.LowercaseUrls = true; })
+                .AddMongoDb(Configuration)
+                .AddSmtp()
+                .AddTemplates()
+                .AddScoped<EmailDeliveryTask>()
+                .AddSwaggerGen()
+                .AddCors(options =>
+                {
+                    options.AddDefaultPolicy(policyBuilder =>
+                    {
+                        policyBuilder.AllowAnyOrigin();
+                        policyBuilder.AllowAnyHeader();
+                        policyBuilder.AllowAnyMethod();
+                    });
+                })
+                .AddApiVersioning(options =>
+                {
+                    options.ReportApiVersions = true;
+                    options.DefaultApiVersion = new ApiVersion(1, 0);
+                    options.AssumeDefaultVersionWhenUnspecified = true;
+                })
+                .AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,7 +55,12 @@ namespace Emailer
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            app.UseSwagger();
+            app.UseCors();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Emailer API");
+            });
 
             app.UseRouting();
 
